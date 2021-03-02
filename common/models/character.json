@@ -1,0 +1,56 @@
+{
+  "name": "character",
+  "plural": "characters",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "skillPoints": {
+      "type": "number",
+      "required": true,
+      "default": 12
+    },
+    "rank": {
+      "type": "number",
+      "required": true,
+      "default": 1
+    },
+    "health": {
+      "type": "number",
+      "required": true,
+      "default": 10
+    },
+    "attack": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "defense": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "magik": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "skillPointsAvailable": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "fights": {
+      "type": [
+        "fight"
+      ],
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

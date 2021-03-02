@@ -1,0 +1,49 @@
+{
+  "name": "fight",
+  "plural": "fights",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "winner": {
+      "type": "character",
+      "required": true
+    },
+    "looser": {
+      "type": "character",
+      "required": true
+    },
+    "turns": {
+      "type": "number",
+      "required": true
+    },
+    "winnerAttackValue": {
+      "type": "number",
+      "required": true
+    },
+    "looserAttackValue": {
+      "type": "number",
+      "required": true
+    },
+    "winnerHPSubstract": {
+      "type": "number",
+      "required": true
+    },
+    "looserHPSubstract": {
+      "type": "number",
+      "required": true
+    },
+    "characters": {
+      "type": [
+        "character"
+      ],
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
