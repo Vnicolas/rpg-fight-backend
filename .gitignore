@@ -1,20 +1,34 @@
-*.csv
-*.dat
-*.iml
+# compiled output
+/dist
+/node_modules
+
+# Logs
+logs
 *.log
-*.out
-*.pid
-*.seed
-*.sublime-*
-*.swo
-*.swp
-*.tgz
-*.xml
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
 .DS_Store
-.idea
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
 .project
-.strong-pm
-coverage
-node_modules
-npm-debug.log
-.env
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
