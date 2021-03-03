@@ -17,10 +17,17 @@ export class UserService {
     const user = await this.userModel.findById(userID).exec();
     return user;
   }
+
+  // Get a single user
+  async getUserWithCredentials(name: string, password: string): Promise<User> {
+    const user = await this.userModel.findOne({ name, password }).exec();
+    return user;
+  }
+
   // Check if a user exists
-  async checkUser(userName: string): Promise<Boolean> {
-    const user = await this.userModel.findOne({ name: userName }).exec();
-    return !!user;
+  async checkUser(name: string): Promise<User> {
+    const user = await this.userModel.findOne({ name }).exec();
+    return user;
   }
   // post a single user
   async addUser(UserDTO: UserDTO): Promise<User> {

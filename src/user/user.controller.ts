@@ -38,26 +38,36 @@ export class UserController {
   @Get(':userID')
   async getCustomer(@Res() res, @Param('userID') userID) {
     const user = await this.userService.getUser(userID);
+    if (!user) throw new NotFoundException('User does not exist !');
     const userDisplayable = this.getInfos(user);
-    if (!user) throw new NotFoundException('User does not exist!');
     return res.status(HttpStatus.OK).json(userDisplayable);
   }
 
-  // add a user
+  // Add a user
   @Post()
   async addCustomer(@Res() res, @Body() UserDTO: UserDTO) {
-    this.userService
-      .checkUser(UserDTO.name)
-      .then(async (userAlreadyExists: boolean) => {
-        if (userAlreadyExists) {
-          return res.status(HttpStatus.BAD_REQUEST).json({
-            message: `User with the name '${UserDTO.name}' already exists`,
-          });
-        }
-        const user = await this.userService.addUser(UserDTO);
-        const userDisplayable = this.getInfos(user);
-        return res.status(HttpStatus.OK).json(userDisplayable);
-      });
+    this.userService.checkUser(UserDTO.name).then(async (user: User) => {
+      if (user) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: `User with the name '${UserDTO.name}' already exists.`,
+        });
+      }
+      const userToDisplay = await this.userService.addUser(UserDTO);
+      const userDisplayable = this.getInfos(userToDisplay);
+      return res.status(HttpStatus.OK).json(userDisplayable);
+    });
+  }
+
+  // Signin a user
+  @Post('/login')
+  async signinUser(@Res() res, @Body() UserDTO: UserDTO) {
+    const user = await this.userService.getUserWithCredentials(
+      UserDTO.name,
+      UserDTO.password,
+    );
+    if (!user) throw new NotFoundException('User does not exist !');
+    const userDisplayable = this.getInfos(user);
+    return res.status(HttpStatus.OK).json(userDisplayable);
   }
 
   // Update a user's details
