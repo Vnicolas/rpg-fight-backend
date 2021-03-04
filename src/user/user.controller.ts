@@ -46,6 +46,12 @@ export class UserController {
   // Add a user
   @Post()
   async addCustomer(@Res() res, @Body() UserDTO: UserDTO) {
+    if (!UserDTO.name || !UserDTO.password) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: `Please fill all the fields, name or password missing`,
+      });
+    }
+
     this.userService.checkUser(UserDTO.name).then(async (user: User) => {
       if (user) {
         return res.status(HttpStatus.BAD_REQUEST).json({
