@@ -1,6 +1,13 @@
-import { Entity, ObjectID, ObjectIdColumn, Column } from 'typeorm';
+import {
+  Entity,
+  ObjectID,
+  ObjectIdColumn,
+  Column,
+  BeforeInsert,
+} from 'typeorm';
 import { UserDTO } from '../dto/user.dto';
 import { ObjectID as MongoObjectID } from 'mongodb';
+import { hash as bcryptHash } from 'bcrypt';
 
 @Entity('users')
 export class User {
@@ -11,6 +18,14 @@ export class User {
   @Column() password: string;
 
   @Column() characters: MongoObjectID[] = [];
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcryptHash(
+      this.password,
+      Number(process.env.HASH_SALT),
+    );
+  }
 
   constructor(user?: UserDTO) {
     Object.assign(this, user);

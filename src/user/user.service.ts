@@ -36,8 +36,8 @@ export class UserService {
   }
 
   // Get a single user
-  async getUserByLogin(name: string, password?: string): Promise<User> {
-    return await this.usersRepository.findOne({ name, password });
+  async getUserByName(name: string): Promise<User> {
+    return await this.usersRepository.findOne({ name });
   }
 
   // post a single user
