@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
+import { CharacterModule } from './character/character.module';
 require('dotenv').config();
 
 const DB_HOST = process.env.DB_HOST;
@@ -16,6 +17,7 @@ const MONGO_URL = `mongodb+srv://${DB_USER}:${DB_PASS}@${DB_HOST}/gamedb`;
       useNewUrlParser: true,
     }),
     UserModule,
+    CharacterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

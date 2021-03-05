@@ -17,8 +17,9 @@ import { User } from './interfaces/user.interface';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  private getInfos(user: User): Partial<UserDTO> {
+  private getInfos(user: User): Partial<User> {
     return {
+      id: user.id,
       name: user.name,
       characters: user.characters,
     };
@@ -28,9 +29,7 @@ export class UserController {
   @Get()
   async getAllUsers(@Res() res) {
     let users: User[] = await this.userService.getAllUsers();
-    const usersDisplayable: Partial<UserDTO>[] = users.map((user) =>
-      this.getInfos(user),
-    );
+    const usersDisplayable = users.map((user: User) => this.getInfos(user));
     return res.status(HttpStatus.OK).json(usersDisplayable);
   }
 
