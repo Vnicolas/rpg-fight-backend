@@ -5,7 +5,7 @@
 
 import { Document, ObjectId } from 'mongoose';
 
-export interface Fight extends Document {
+export interface IFight extends Document {
   readonly winner: ObjectId;
   readonly looser: ObjectId;
   readonly turns: number;

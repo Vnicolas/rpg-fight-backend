@@ -1,31 +1,35 @@
-import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { Character } from './interfaces/character.interface';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CharacterDTO } from './dto/character.dto';
-import { UserService } from 'src/user/user.service';
+import { Character } from './entity/character.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MongoRepository } from 'typeorm';
+import { ObjectID as MongoObjectID } from 'mongodb';
 
 @Injectable()
 export class CharacterService {
   constructor(
-    @InjectModel('Character') private readonly characterModel: Model<Character>,
-    private userService: UserService,
+    @InjectRepository(Character)
+    private readonly characterRepository: MongoRepository<Character>,
   ) {}
   // fetch all characters
   async getAllCharacters(): Promise<Character[]> {
-    return await this.characterModel.find().exec();
+    return await this.characterRepository.find();
   }
+
   // Get a single character
   async getCharacter(characterID: string): Promise<Character> {
-    return await this.characterModel.findById(characterID).exec();
+    return await this.characterRepository.findOne(characterID);
+  }
+
+  // Get all character for a user
+  async getCharacters(characterIDs: MongoObjectID[]): Promise<Character[]> {
+    return await this.characterRepository.findByIds(characterIDs);
   }
 
   // post a single character
   async addCharacter(CharacterDTO: CharacterDTO): Promise<Character> {
-    const newCharacter = await this.characterModel.create(CharacterDTO);
-    await this.userService.addCharacterToUser(
-      CharacterDTO.owner,
-      newCharacter.id,
+    const newCharacter = await this.characterRepository.save(
+      new Character(CharacterDTO),
     );
     return Promise.resolve(newCharacter);
   }
@@ -33,13 +37,15 @@ export class CharacterService {
   // Edit character details
   async updateCharacter(
     characterID: string,
-    character: Character,
-  ): Promise<Character> {
-    const updatedCharacter = await this.characterModel.findByIdAndUpdate(
+    characterDTO: CharacterDTO,
+  ): Promise<void> {
+    const existingCharacter = await this.characterRepository.findOne(
       characterID,
-      character,
-      { new: true },
     );
-    return updatedCharacter;
+    if (!existingCharacter) {
+      throw new NotFoundException();
+    }
+    const { fights, owner, ...character } = characterDTO;
+    await this.characterRepository.update(characterID, character);
   }
 }

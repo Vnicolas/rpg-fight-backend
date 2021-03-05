@@ -3,11 +3,11 @@
   of values that will be received by the application
 **/
 
-import { Document, ObjectId } from 'mongoose';
+import { Document } from 'mongoose';
+import { ICharacter } from 'src/character/interfaces/character.interface';
 
-export interface User extends Document {
+export interface IUser extends Document {
   readonly name: string;
   readonly password: string;
-  readonly characters: ObjectId[];
-  readonly created_at: Date;
+  readonly characters: ICharacter[];
 }

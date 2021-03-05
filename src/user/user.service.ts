@@ -1,69 +1,72 @@
-import { Injectable } from '@nestjs/common';
-import { Model, ObjectId } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from './interfaces/user.interface';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserDTO } from './dto/user.dto';
-import { Character } from 'src/character/interfaces/character.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { MongoRepository } from 'typeorm';
+import { Character } from 'src/character/entity/character.entity';
+import { CharacterService } from 'src/character/character.service';
+import { IUser } from './interfaces/user.interface';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: MongoRepository<User>,
+    private characterService: CharacterService,
+  ) {}
   // fetch all users
   async getAllUsers(): Promise<User[]> {
-    const users = await this.userModel.find().exec();
+    const users = await this.usersRepository.find();
     return users;
   }
+
   // Get a single user
-  async getUser(userID: string): Promise<User> {
-    return await this.userModel
-      .findById(userID)
-      .populate({
-        path: 'characters',
-        select: '-_id -owner -__v',
-      })
-      .exec();
+  async getUser(userId: string): Promise<User> {
+    const user = await this.usersRepository.findOne(userId);
+    const userCharacters = await this.characterService.getCharacters(
+      user.characters,
+    );
+    const userToDisplay = JSON.parse(JSON.stringify(user));
+    userToDisplay.characters = userCharacters;
+    return Promise.resolve(userToDisplay);
   }
 
   // Get a single user
-  async getUserWithCredentials(name: string, password: string): Promise<User> {
-    return await this.userModel
-      .findOne({ name, password })
-      .populate({
-        path: 'characters',
-        select: '-_id -owner -__v',
-      })
-      .exec();
+  async getUserByLogin(name: string, password?: string): Promise<User> {
+    return await this.usersRepository.findOne({ name, password });
   }
 
-  // Check if a user exists
-  async checkUser(name: string): Promise<User> {
-    return await this.userModel.findOne({ name }).exec();
-  }
   // post a single user
-  async addUser(UserDTO: UserDTO): Promise<User> {
-    const newUser = await this.userModel.create(UserDTO);
-    return newUser.save();
+  async addUser(userDTO: UserDTO): Promise<User> {
+    if (!userDTO || !userDTO.name || !userDTO.password) {
+      throw new BadRequestException(
+        'A user must have at least name and password defined',
+      );
+    }
+    return await this.usersRepository.save(new User(userDTO));
   }
   // Edit user details
-  async updateUser(userID: string, UserDTO: UserDTO): Promise<User> {
-    const updatedUser = await this.userModel.findByIdAndUpdate(
-      userID,
-      UserDTO,
-      { new: true },
-    );
-    return updatedUser;
+  async updateUser(userID: string, userDTO: UserDTO): Promise<void> {
+    // Check if entity exists
+    const existingUser = await this.usersRepository.findOne(userID);
+    if (!existingUser) {
+      throw new NotFoundException();
+    }
+    const { characters, ...user } = userDTO;
+    await this.usersRepository.update(userID, user);
   }
 
   // Add character to user
   async addCharacterToUser(
-    userID: ObjectId,
-    characterId: ObjectId,
-  ): Promise<User> {
-    return this.userModel.findById(userID).then((user: User) => {
-      user.characters.push(characterId);
-      return user
-        .save()
-        .then((_user) => user.populate('characters').execPopulate());
-    });
+    userID: string,
+    character: Character,
+  ): Promise<void> {
+    const user: User = await this.usersRepository.findOne(userID);
+    user.characters.push(character.id);
+    await this.usersRepository.update(userID, user);
   }
 }

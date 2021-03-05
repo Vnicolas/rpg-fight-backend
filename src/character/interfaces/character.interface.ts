@@ -4,10 +4,10 @@
 **/
 
 import { Document } from 'mongoose';
-import { Fight } from 'src/fight/interfaces/fight.interface';
-import { User } from 'src/user/interfaces/user.interface';
+import { IFight } from 'src/fight/interfaces/fight.interface';
+import { IUser } from 'src/user/interfaces/user.interface';
 
-export interface Character extends Document {
+export interface ICharacter extends Document {
   readonly picture: string;
   readonly name: string;
   readonly skillPoints: number;
@@ -16,6 +16,6 @@ export interface Character extends Document {
   readonly attack: number;
   readonly defense: number;
   readonly magik: number;
-  readonly fights: Fight[];
-  readonly owner: User;
+  readonly fights: IFight[];
+  readonly owner: IUser;
 }

@@ -5,41 +5,40 @@ import {
   HttpStatus,
   Post,
   Body,
-  Put,
   NotFoundException,
   Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
-import { User } from './interfaces/user.interface';
+import { User } from './entities/user.entity';
+import { CharacterDTO } from 'src/character/dto/character.dto';
+import Avatars from '@dicebear/avatars';
+import sprites from '@dicebear/avatars-bottts-sprites';
+import { CharacterService } from 'src/character/character.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) {}
-
-  private getInfos(user: User): Partial<User> {
-    return {
-      id: user.id,
-      name: user.name,
-      characters: user.characters,
-    };
-  }
+  constructor(
+    private userService: UserService,
+    private characterService: CharacterService,
+  ) {}
 
   // Retrieve users list
   @Get()
   async getAllUsers(@Res() res) {
-    let users: User[] = await this.userService.getAllUsers();
-    const usersDisplayable = users.map((user: User) => this.getInfos(user));
-    return res.status(HttpStatus.OK).json(usersDisplayable);
+    const users: User[] = await this.userService.getAllUsers();
+    return res.status(HttpStatus.OK).json(users);
   }
 
   // Fetch a particular user using ID
   @Get(':userID')
-  async getCustomer(@Res() res, @Param('userID') userID) {
-    const user = await this.userService.getUser(userID);
-    if (!user) throw new NotFoundException('User does not exist !');
-    const userDisplayable = this.getInfos(user);
-    return res.status(HttpStatus.OK).json(userDisplayable);
+  async getCustomer(@Res() res, @Param('userID') userID: string) {
+    const user: User = await this.userService.getUser(userID);
+    if (!user)
+      throw new NotFoundException(
+        `User with the id ${userID} does not exist !`,
+      );
+    return res.status(HttpStatus.OK).json(user);
   }
 
   // Add a user
@@ -51,42 +50,48 @@ export class UserController {
       });
     }
 
-    this.userService.checkUser(UserDTO.name).then(async (user: User) => {
+    this.userService.getUserByLogin(UserDTO.name).then(async (user: User) => {
       if (user) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           message: `User with the name '${UserDTO.name}' already exists.`,
         });
       }
-      const userToDisplay = await this.userService.addUser(UserDTO);
-      const userDisplayable = this.getInfos(userToDisplay);
-      return res.status(HttpStatus.OK).json(userDisplayable);
+      const userToDisplay: User = await this.userService.addUser(UserDTO);
+      return res.status(HttpStatus.OK).json(userToDisplay);
     });
   }
 
   // Signin a user
   @Post('/login')
   async signinUser(@Res() res, @Body() UserDTO: UserDTO) {
-    const user = await this.userService.getUserWithCredentials(
+    const user: User = await this.userService.getUserByLogin(
       UserDTO.name,
       UserDTO.password,
     );
     if (!user) throw new NotFoundException('User does not exist !');
-    const userDisplayable = this.getInfos(user);
-    return res.status(HttpStatus.OK).json(userDisplayable);
+    return res.status(HttpStatus.OK).json(user);
   }
 
-  // Update a user's details
-  // @Put(':userID')
-  // async updateCustomer(
-  //   @Res() res,
-  //   @Param('userID') userID,
-  //   @Body() UserDTO: UserDTO,
-  // ) {
-  //   const user = await this.userService.updateUser(userID, UserDTO);
-  //   if (!user) throw new NotFoundException('User does not exist!');
-  //   return res.status(HttpStatus.OK).json({
-  //     message: 'User has been successfully updated',
-  //     user,
-  //   });
-  // }
+  // Add a character to a user
+  @Post(':userID/characters')
+  async addCharacter(
+    @Res() res,
+    @Param('userID') userID: string,
+    @Body() CharacterDTO: CharacterDTO,
+  ) {
+    const avatars = new Avatars(sprites);
+    const picture = avatars.create(CharacterDTO.name);
+    CharacterDTO.picture = picture;
+    if (!CharacterDTO.name) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: `Missing field name`,
+      });
+    }
+
+    const characterToDisplay = await this.characterService.addCharacter(
+      CharacterDTO,
+    );
+    await this.userService.addCharacterToUser(userID, characterToDisplay);
+    return res.status(HttpStatus.OK).json(characterToDisplay);
+  }
 }
