@@ -12,12 +12,9 @@ import { hash as bcryptHash } from 'bcrypt';
 @Entity('users')
 export class User {
   @ObjectIdColumn() id: ObjectID;
-
   @Column({ nullable: false }) name: string;
-
   @Column() password: string;
-
-  @Column() characters: MongoObjectID[] = [];
+  @Column({ length: 10 }) characters: MongoObjectID[] = [];
 
   @BeforeInsert()
   async hashPassword() {

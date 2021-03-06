@@ -45,7 +45,6 @@ export class UserService {
 
   // Add a character to user
   async addCharacterToUser(user: User, character: Character): Promise<User> {
-    // TODO: Check doubles in user.characters
     user.characters.push(character.id);
     await this.usersRepository.update(user.id, user);
     return await this.getUserByName(user.name);

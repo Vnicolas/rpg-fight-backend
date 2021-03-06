@@ -20,6 +20,7 @@ import { compare as bcryptCompare } from 'bcrypt';
 import { UserLoginDTO } from './dto/user.login.dto';
 import { objectIdCharactersNumber } from 'src/shared/utils';
 import { ICharacter } from 'src/character/interfaces/character.interface';
+import { maxCharactersAllowedPerUser } from '../shared/utils';
 
 @Controller('users')
 export class UserController {
@@ -106,11 +107,19 @@ export class UserController {
       const characterAlreadyExists = (userPopulated.characters as ICharacter[]).find(
         (character: ICharacter) => character.name === CharacterDTO.name,
       );
+
       if (characterAlreadyExists) {
         return res.status(HttpStatus.FORBIDDEN).json({
           message: `Character with the name ${CharacterDTO.name} already exists for this user`,
         });
       }
+
+      if (user.characters.length >= maxCharactersAllowedPerUser) {
+        return res.status(HttpStatus.FORBIDDEN).json({
+          message: `Max characters limit (${maxCharactersAllowedPerUser}) per user reached`,
+        });
+      }
+
       const avatars = new Avatars(sprites);
       const picture = avatars.create(CharacterDTO.name);
       CharacterDTO.picture = picture;
