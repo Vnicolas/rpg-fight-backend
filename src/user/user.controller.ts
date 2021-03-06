@@ -83,7 +83,8 @@ export class UserController {
     if (!user) throw new NotFoundException('User does not exist !');
     const match = await bcryptCompare(UserDTO.password, user.password);
     if (match) {
-      return res.status(HttpStatus.OK).json(user);
+      const userPopulated = await this.userService.populateUser(user as User);
+      return res.status(HttpStatus.OK).json(userPopulated);
     }
     return res.status(HttpStatus.UNAUTHORIZED);
   }
