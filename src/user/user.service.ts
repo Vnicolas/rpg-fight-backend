@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 import { MongoRepository } from 'typeorm';
 import { Character } from 'src/character/entity/character.entity';
 import { CharacterService } from 'src/character/character.service';
+import { IUser } from './interfaces/user.interface';
 
 @Injectable()
 export class UserService {
@@ -21,12 +22,15 @@ export class UserService {
   }
 
   // Fetch a single user
-  async getUser(userID: string): Promise<User> {
+  async getUser(userID: string, populate = true): Promise<User | IUser> {
     const user = await this.usersRepository.findOne(userID);
     if (!user) {
       throw new NotFoundException('User does not exist !');
     }
-    return await this.populateUser(user);
+    if (populate) {
+      return await this.populateUser(user);
+    }
+    return user;
   }
 
   // Get a single user with name
@@ -47,7 +51,7 @@ export class UserService {
     return await this.getUserByName(user.name);
   }
 
-  async populateUser(user: User): Promise<User> {
+  async populateUser(user: User): Promise<User | IUser> {
     const userCharacters = await this.characterService.getCharacters(
       user.characters,
     );

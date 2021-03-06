@@ -19,6 +19,7 @@ import { CharacterService } from 'src/character/character.service';
 import { compare as bcryptCompare } from 'bcrypt';
 import { UserLoginDTO } from './dto/user.login.dto';
 import { objectIdCharactersNumber } from 'src/shared/utils';
+import { ICharacter } from 'src/character/interfaces/character.interface';
 
 @Controller('users')
 export class UserController {
@@ -99,7 +100,16 @@ export class UserController {
     }
 
     try {
-      const user: User = await this.userService.getUser(userID);
+      const user = (await this.userService.getUser(userID, false)) as User;
+      const userPopulated = await this.userService.populateUser(user as User);
+      const characterAlreadyExists = (userPopulated.characters as ICharacter[]).find(
+        (character: ICharacter) => character.name === CharacterDTO.name,
+      );
+      if (characterAlreadyExists) {
+        return res.status(HttpStatus.FORBIDDEN).json({
+          message: `Character with the name ${CharacterDTO.name} already exists for this user`,
+        });
+      }
       const avatars = new Avatars(sprites);
       const picture = avatars.create(CharacterDTO.name);
       CharacterDTO.picture = picture;
