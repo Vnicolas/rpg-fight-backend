@@ -8,9 +8,9 @@ import { IFight } from 'src/fight/interfaces/fight.interface';
 import { IUser } from 'src/user/interfaces/user.interface';
 
 export enum CharacterStatus {
-  IN_FIGHT = 'InFight',
+  IN_FIGHT = 'In Fight',
   AVAILABLE = 'Available',
-  RESTING = 'Resting ',
+  RESTING = 'Resting',
 }
 
 export interface ICharacter extends Document {
