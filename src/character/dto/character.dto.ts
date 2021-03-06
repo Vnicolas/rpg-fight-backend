@@ -3,6 +3,7 @@
 **/
 
 import { ObjectId } from 'mongoose';
+import { ObjectID as MongoObjectID } from 'mongodb';
 
 export class CharacterDTO {
   picture: string;
@@ -13,7 +14,7 @@ export class CharacterDTO {
   readonly attack: number = 0;
   readonly defense: number = 0;
   readonly magik: number = 0;
-  readonly owner: ObjectId;
+  owner: MongoObjectID;
   readonly fights: ObjectId[] = [];
   readonly created_at: Date;
 }

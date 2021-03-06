@@ -7,6 +7,7 @@ import {
   Body,
   NotFoundException,
   Param,
+  BadRequestException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
@@ -17,6 +18,7 @@ import sprites from '@dicebear/avatars-bottts-sprites';
 import { CharacterService } from 'src/character/character.service';
 import { compare as bcryptCompare } from 'bcrypt';
 import { UserLoginDTO } from './dto/user.login.dto';
+import { objectIdCharactersNumber } from 'src/shared/utils';
 
 @Controller('users')
 export class UserController {
@@ -28,24 +30,34 @@ export class UserController {
   // Retrieve users list
   @Get()
   async getAllUsers(@Res() res) {
-    const users: User[] = await this.userService.getAllUsers();
-    return res.status(HttpStatus.OK).json(users);
+    try {
+      const users: User[] = await this.userService.getAllUsers();
+      return res.status(HttpStatus.OK).json(users);
+    } catch (err) {
+      throw err;
+    }
   }
 
   // Fetch a particular user using ID
   @Get(':userID')
-  async getCustomer(@Res() res, @Param('userID') userID: string) {
-    const user: User = await this.userService.getUser(userID);
-    if (!user)
-      throw new NotFoundException(
-        `User with the id ${userID} does not exist !`,
-      );
-    return res.status(HttpStatus.OK).json(user);
+  async getUser(@Res() res, @Param('userID') userID: string) {
+    if (userID.length !== objectIdCharactersNumber) {
+      throw new BadRequestException();
+    }
+
+    return this.userService
+      .getUser(userID)
+      .then((user: User) => {
+        return res.status(HttpStatus.OK).json(user);
+      })
+      .catch((error: any) => {
+        throw error;
+      });
   }
 
   // Add a user
   @Post()
-  async addCustomer(@Res() res, @Body() UserDTO: UserDTO) {
+  async addUser(@Res() res, @Body() UserDTO: UserDTO) {
     if (!UserDTO.name || !UserDTO.password) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: `Please fill all the fields, name or password missing`,
@@ -72,7 +84,7 @@ export class UserController {
     if (match) {
       return res.status(HttpStatus.OK).json(user);
     }
-    return res.status(HttpStatus.UNAUTHORIZED).json(user);
+    return res.status(HttpStatus.UNAUTHORIZED);
   }
 
   // Add a character to a user
@@ -82,19 +94,29 @@ export class UserController {
     @Param('userID') userID: string,
     @Body() CharacterDTO: CharacterDTO,
   ) {
-    const avatars = new Avatars(sprites);
-    const picture = avatars.create(CharacterDTO.name);
-    CharacterDTO.picture = picture;
-    if (!CharacterDTO.name) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        message: `Missing field name`,
-      });
+    if (userID.length !== objectIdCharactersNumber) {
+      throw new BadRequestException();
     }
 
-    const characterToDisplay = await this.characterService.addCharacter(
-      CharacterDTO,
-    );
-    await this.userService.addCharacterToUser(userID, characterToDisplay);
-    return res.status(HttpStatus.OK).json(characterToDisplay);
+    try {
+      const user: User = await this.userService.getUser(userID);
+      const avatars = new Avatars(sprites);
+      const picture = avatars.create(CharacterDTO.name);
+      CharacterDTO.picture = picture;
+      CharacterDTO.owner = user.id;
+      if (!CharacterDTO.name) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: `Missing field name`,
+        });
+      }
+
+      const characterToDisplay = await this.characterService.addCharacter(
+        CharacterDTO,
+      );
+      await this.userService.addCharacterToUser(user, characterToDisplay);
+      return res.status(HttpStatus.OK).json(characterToDisplay);
+    } catch (err) {
+      throw err;
+    }
   }
 }

@@ -5,7 +5,9 @@ import {
   HttpStatus,
   NotFoundException,
   Param,
+  BadRequestException,
 } from '@nestjs/common';
+import { objectIdCharactersNumber } from 'src/shared/utils';
 import { CharacterService } from './character.service';
 import { Character } from './entity/character.entity';
 
@@ -22,10 +24,14 @@ export class CharacterController {
 
   // Fetch a particular character using ID
   @Get(':characterID')
-  async getCustomer(@Res() res, @Param('characterID') characterID) {
+  async getCustomer(@Res() res, @Param('characterID') characterID: string) {
+    if (characterID.length !== objectIdCharactersNumber) {
+      throw new BadRequestException();
+    }
     const character = await this.characterService.getCharacter(characterID);
-    if (!character) throw new NotFoundException('Character does not exist !');
-    const { id, ...characterDisplayable } = character;
-    return res.status(HttpStatus.OK).json(characterDisplayable);
+    if (!character) {
+      throw new NotFoundException('Character does not exist !');
+    }
+    return res.status(HttpStatus.OK).json(character);
   }
 }
