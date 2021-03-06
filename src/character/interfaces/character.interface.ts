@@ -7,8 +7,15 @@ import { Document } from 'mongoose';
 import { IFight } from 'src/fight/interfaces/fight.interface';
 import { IUser } from 'src/user/interfaces/user.interface';
 
+export enum CharacterStatus {
+  IN_FIGHT = 'InFight',
+  AVAILABLE = 'Available',
+  RESTING = 'Resting ',
+}
+
 export interface ICharacter extends Document {
   readonly picture: string;
+  readonly owner: IUser;
   readonly name: string;
   readonly skillPoints: number;
   readonly rank: number;
@@ -17,5 +24,5 @@ export interface ICharacter extends Document {
   readonly defense: number;
   readonly magik: number;
   readonly fights: IFight[];
-  readonly owner: IUser;
+  readonly status: CharacterStatus;
 }

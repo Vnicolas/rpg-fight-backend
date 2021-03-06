@@ -4,9 +4,11 @@
 
 import { ObjectId } from 'mongoose';
 import { ObjectID as MongoObjectID } from 'mongodb';
+import { CharacterStatus } from '../interfaces/character.interface';
 
 export class CharacterDTO {
   picture: string;
+  owner: MongoObjectID;
   readonly name: string;
   readonly skillPoints: number = 12;
   readonly rank: number = 1;
@@ -14,7 +16,6 @@ export class CharacterDTO {
   readonly attack: number = 0;
   readonly defense: number = 0;
   readonly magik: number = 0;
-  owner: MongoObjectID;
   readonly fights: ObjectId[] = [];
-  readonly created_at: Date;
+  status: CharacterStatus;
 }

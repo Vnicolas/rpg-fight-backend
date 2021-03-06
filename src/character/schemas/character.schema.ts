@@ -3,7 +3,7 @@
 **/
 
 import { EntitySchema } from 'typeorm';
-import { ICharacter } from '../interfaces/character.interface';
+import { CharacterStatus, ICharacter } from '../interfaces/character.interface';
 
 export const CharacterSchema = new EntitySchema<ICharacter>({
   name: 'character',
@@ -17,6 +17,7 @@ export const CharacterSchema = new EntitySchema<ICharacter>({
     attack: { type: Number, default: 0 },
     defense: { type: Number, default: 0 },
     magik: { type: Number, default: 0 },
+    status: { type: String, default: CharacterStatus.AVAILABLE },
   },
   relations: {
     owner: {
