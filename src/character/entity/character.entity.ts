@@ -11,7 +11,7 @@ export class Character {
   @Column() name: string;
   @Column() skillPoints: number = 12;
   @Column() rank: number = 1;
-  @Column() health: number = 0;
+  @Column() health: number = 10;
   @Column() attack: number = 0;
   @Column() defense: number = 0;
   @Column() magik: number = 0;
