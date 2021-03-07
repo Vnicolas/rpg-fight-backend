@@ -51,7 +51,7 @@ export class UserService {
     return await this.getUserByName(user.name);
   }
 
-  // Add a character to user
+  // Delete a character to user
   async deleteCharacterToUser(
     userId: string,
     characterId: string,

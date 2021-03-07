@@ -14,8 +14,6 @@ import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { CharacterDTO } from 'src/character/dto/character.dto';
-import Avatars from '@dicebear/avatars';
-import sprites from '@dicebear/avatars-bottts-sprites';
 import { CharacterService } from 'src/character/character.service';
 import { compare as bcryptCompare } from 'bcrypt';
 import { UserLoginDTO } from './dto/user.login.dto';
@@ -121,16 +119,7 @@ export class UserController {
         });
       }
 
-      const avatars = new Avatars(sprites);
-      const picture = avatars.create(CharacterDTO.name);
-      CharacterDTO.picture = picture;
       CharacterDTO.owner = user._id;
-      if (!CharacterDTO.name) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          message: `Missing field name`,
-        });
-      }
-
       const characterToDisplay = await this.characterService.addCharacter(
         CharacterDTO,
       );
