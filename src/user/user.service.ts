@@ -3,6 +3,7 @@ import { UserDTO } from './dto/user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { MongoRepository } from 'typeorm';
+import { ObjectId } from 'mongodb';
 import { Character } from 'src/character/entity/character.entity';
 import { CharacterService } from 'src/character/character.service';
 import { IUser } from './interfaces/user.interface';
@@ -45,11 +46,38 @@ export class UserService {
 
   // Add a character to user
   async addCharacterToUser(user: User, character: Character): Promise<User> {
-    user.characters.push(character.id);
-    await this.usersRepository.update(user.id, user);
+    user.characters.push(character._id);
+    await this.usersRepository.update(user._id, user);
     return await this.getUserByName(user.name);
   }
 
+  // Add a character to user
+  async deleteCharacterToUser(
+    userId: string,
+    characterId: string,
+  ): Promise<User> {
+    const user = (await this.getUser(userId, false)) as User;
+    const userCharacters = user.characters.map((characterId: ObjectId) =>
+      JSON.parse(JSON.stringify(characterId)),
+    );
+    const characterIndex = userCharacters.indexOf(characterId);
+    if (characterIndex < 0) {
+      throw new NotFoundException("User don't have this Character");
+    }
+    const characterToDelete = await this.characterService.getCharacter(
+      characterId,
+    );
+    if (!characterToDelete) {
+      throw new NotFoundException('Character does not exist');
+    }
+
+    user.characters.splice(characterIndex, 1);
+    await this.characterService.deleteCharacter(characterId);
+    await this.usersRepository.update(user._id, user);
+    return (await this.getUser(userId)) as User;
+  }
+
+  // Retrieve all user's characters
   async populateUser(user: User): Promise<User | IUser> {
     const userCharacters = await this.characterService.getCharacters(
       user.characters,

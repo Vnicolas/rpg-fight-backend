@@ -11,7 +11,7 @@ import { hash as bcryptHash } from 'bcrypt';
 
 @Entity('users')
 export class User {
-  @ObjectIdColumn() id: ObjectID;
+  @ObjectIdColumn() _id: ObjectID;
   @Column({ nullable: false }) name: string;
   @Column() password: string;
   @Column({ length: 10 }) characters: MongoObjectID[] = [];

@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Param,
   BadRequestException,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
@@ -41,14 +42,14 @@ export class UserController {
   }
 
   // Fetch a particular user using ID
-  @Get(':userID')
-  async getUser(@Res() res, @Param('userID') userID: string) {
-    if (userID.length !== objectIdCharactersNumber) {
+  @Get(':userId')
+  async getUser(@Res() res, @Param('userId') userId: string) {
+    if (userId.length !== objectIdCharactersNumber) {
       throw new BadRequestException();
     }
 
     return this.userService
-      .getUser(userID)
+      .getUser(userId)
       .then((user: User) => {
         return res.status(HttpStatus.OK).json(user);
       })
@@ -91,18 +92,18 @@ export class UserController {
   }
 
   // Add a character to a user
-  @Post(':userID/characters')
+  @Post(':userId/characters')
   async addCharacter(
     @Res() res,
-    @Param('userID') userID: string,
+    @Param('userId') userId: string,
     @Body() CharacterDTO: CharacterDTO,
   ) {
-    if (userID.length !== objectIdCharactersNumber) {
+    if (userId.length !== objectIdCharactersNumber) {
       throw new BadRequestException();
     }
 
     try {
-      const user = (await this.userService.getUser(userID, false)) as User;
+      const user = (await this.userService.getUser(userId, false)) as User;
       const userPopulated = await this.userService.populateUser(user as User);
       const characterAlreadyExists = (userPopulated.characters as ICharacter[]).find(
         (character: ICharacter) => character.name === CharacterDTO.name,
@@ -123,7 +124,7 @@ export class UserController {
       const avatars = new Avatars(sprites);
       const picture = avatars.create(CharacterDTO.name);
       CharacterDTO.picture = picture;
-      CharacterDTO.owner = user.id;
+      CharacterDTO.owner = user._id;
       if (!CharacterDTO.name) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           message: `Missing field name`,
@@ -135,6 +136,31 @@ export class UserController {
       );
       await this.userService.addCharacterToUser(user, characterToDisplay);
       return res.status(HttpStatus.OK).json(characterToDisplay);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Add a character to a user
+  @Delete(':userId/characters/:characterId')
+  async deleteCharacter(
+    @Res() res,
+    @Param('userId') userId: string,
+    @Param('characterId') characterId: string,
+  ) {
+    if (
+      userId.length !== objectIdCharactersNumber ||
+      characterId.length !== objectIdCharactersNumber
+    ) {
+      throw new BadRequestException();
+    }
+
+    try {
+      const userToDisplay = await this.userService.deleteCharacterToUser(
+        userId,
+        characterId,
+      );
+      return res.status(HttpStatus.OK).json(userToDisplay);
     } catch (err) {
       throw err;
     }

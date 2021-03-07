@@ -11,7 +11,7 @@ export class CharacterService {
     @InjectRepository(Character)
     private readonly characterRepository: MongoRepository<Character>,
   ) {}
-  // fetch all characters
+  // Fetch all characters
   async getAllCharacters(): Promise<Character[]> {
     return await this.characterRepository.find();
   }
@@ -26,12 +26,17 @@ export class CharacterService {
     return await this.characterRepository.findByIds(characterIDs);
   }
 
-  // post a single character
+  // Post a single character
   async addCharacter(CharacterDTO: CharacterDTO): Promise<Character> {
     const newCharacter = await this.characterRepository.save(
       new Character(CharacterDTO),
     );
     return Promise.resolve(newCharacter);
+  }
+
+  // Delete a single character
+  async deleteCharacter(characterId: string): Promise<void> {
+    await this.characterRepository.delete(characterId);
   }
 
   // Edit character details

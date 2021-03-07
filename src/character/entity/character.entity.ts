@@ -5,7 +5,7 @@ import { CharacterStatus } from '../interfaces/character.interface';
 
 @Entity('characters')
 export class Character {
-  @ObjectIdColumn() id: ObjectID;
+  @ObjectIdColumn() _id: ObjectID;
   @Column() picture: string;
   @Column() owner: MongoObjectID;
   @Column() name: string;

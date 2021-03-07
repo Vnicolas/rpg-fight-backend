@@ -23,14 +23,14 @@ export class CharacterController {
   }
 
   // Fetch a particular character using ID
-  @Get(':characterID')
-  async getCustomer(@Res() res, @Param('characterID') characterID: string) {
-    if (characterID.length !== objectIdCharactersNumber) {
+  @Get(':characterId')
+  async getCustomer(@Res() res, @Param('characterId') characterId: string) {
+    if (characterId.length !== objectIdCharactersNumber) {
       throw new BadRequestException();
     }
-    const character = await this.characterService.getCharacter(characterID);
+    const character = await this.characterService.getCharacter(characterId);
     if (!character) {
-      throw new NotFoundException('Character does not exist !');
+      throw new NotFoundException('Character does not exist');
     }
     return res.status(HttpStatus.OK).json(character);
   }
