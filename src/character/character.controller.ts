@@ -50,6 +50,10 @@ export class CharacterController {
     @Param('characterId') characterId: string,
     @Body() characterDTO: CharacterDTO,
   ) {
+    if (characterId.length !== objectIdCharactersNumber) {
+      throw new BadRequestException();
+    }
+
     try {
       const characterUpdated: Character = await this.characterService.updateCharacter(
         characterId,
