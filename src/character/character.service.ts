@@ -59,7 +59,7 @@ export class CharacterService {
   async updateCharacter(
     characterID: string,
     characterDTO: CharacterDTO,
-  ): Promise<void> {
+  ): Promise<Character> {
     const existingCharacter = await this.characterRepository.findOne(
       characterID,
     );
@@ -68,5 +68,6 @@ export class CharacterService {
     }
     const { fights, owner, ...character } = characterDTO;
     await this.characterRepository.update(characterID, character);
+    return await this.characterRepository.findOne(characterID);
   }
 }

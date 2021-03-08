@@ -5,9 +5,12 @@ import {
   HttpStatus,
   Param,
   BadRequestException,
+  Patch,
+  Body,
 } from '@nestjs/common';
 import { objectIdCharactersNumber } from 'src/shared/utils';
 import { CharacterService } from './character.service';
+import { CharacterDTO } from './dto/character.dto';
 import { Character } from './entity/character.entity';
 
 @Controller('characters')
@@ -35,6 +38,24 @@ export class CharacterController {
     try {
       const character = await this.characterService.getCharacter(characterId);
       return res.status(HttpStatus.OK).json(character);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Update a character
+  @Patch(':characterId')
+  async updateCharacter(
+    @Res() res,
+    @Param('characterId') characterId: string,
+    @Body() characterDTO: CharacterDTO,
+  ) {
+    try {
+      const characterUpdated: Character = await this.characterService.updateCharacter(
+        characterId,
+        characterDTO,
+      );
+      return res.status(HttpStatus.OK).json(characterUpdated);
     } catch (err) {
       throw err;
     }
