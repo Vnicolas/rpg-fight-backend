@@ -35,8 +35,12 @@ export class UserService {
   }
 
   // Get a single user with name
-  async getUserByName(name: string): Promise<User> {
-    return await this.usersRepository.findOne({ name });
+  async getUserByName(name: string, justCheck = false): Promise<User> {
+    const user = await this.usersRepository.findOne({ name });
+    if (!user && !justCheck) {
+      throw new NotFoundException('User does not exist !');
+    }
+    return user;
   }
 
   // Post a single user
@@ -45,10 +49,9 @@ export class UserService {
   }
 
   // Add a character to user
-  async addCharacterToUser(user: User, character: Character): Promise<User> {
+  addCharacterToUser(user: User, character: Character): void {
     user.characters.push(character._id);
-    await this.usersRepository.update(user._id, user);
-    return await this.getUserByName(user.name);
+    this.usersRepository.update(user._id, user);
   }
 
   // Delete a character to user

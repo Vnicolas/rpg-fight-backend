@@ -46,14 +46,12 @@ export class UserController {
       throw new BadRequestException();
     }
 
-    return this.userService
-      .getUser(userId)
-      .then((user: User) => {
-        return res.status(HttpStatus.OK).json(user);
-      })
-      .catch((error: any) => {
-        throw error;
-      });
+    try {
+      const user = await this.userService.getUser(userId);
+      return res.status(HttpStatus.OK).json(user);
+    } catch (err) {
+      throw err;
+    }
   }
 
   // Add a user
@@ -65,28 +63,37 @@ export class UserController {
       });
     }
 
-    this.userService.getUserByName(UserDTO.name).then(async (user: User) => {
+    try {
+      const user: User = await this.userService.getUserByName(
+        UserDTO.name,
+        true,
+      );
       if (user) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
+        return res.status(HttpStatus.FORBIDDEN).json({
           message: `User with the name '${UserDTO.name}' already exists.`,
         });
       }
       const userToDisplay: User = await this.userService.addUser(UserDTO);
       return res.status(HttpStatus.OK).json(userToDisplay);
-    });
+    } catch (err) {
+      throw err;
+    }
   }
 
   // Signin a user
   @Post('/login')
   async signinUser(@Res() res, @Body() UserDTO: UserLoginDTO) {
-    const user: User = await this.userService.getUserByName(UserDTO.name);
-    if (!user) throw new NotFoundException('User does not exist !');
-    const match = await bcryptCompare(UserDTO.password, user.password);
-    if (match) {
+    try {
+      const user: User = await this.userService.getUserByName(UserDTO.name);
+      const match = await bcryptCompare(UserDTO.password, user.password);
+      if (!match) {
+        return res.status(HttpStatus.UNAUTHORIZED);
+      }
       const userPopulated = await this.userService.populateUser(user as User);
       return res.status(HttpStatus.OK).json(userPopulated);
+    } catch (err) {
+      throw err;
     }
-    return res.status(HttpStatus.UNAUTHORIZED);
   }
 
   // Add a character to a user
@@ -123,7 +130,7 @@ export class UserController {
       const characterToDisplay = await this.characterService.addCharacter(
         CharacterDTO,
       );
-      await this.userService.addCharacterToUser(user, characterToDisplay);
+      this.userService.addCharacterToUser(user, characterToDisplay);
       return res.status(HttpStatus.OK).json(characterToDisplay);
     } catch (err) {
       throw err;
