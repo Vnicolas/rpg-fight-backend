@@ -137,7 +137,7 @@ export class UserController {
     }
   }
 
-  // Add a character to a user
+  // Delete a character to a user
   @Delete(':userId/characters/:characterId')
   async deleteCharacter(
     @Res() res,

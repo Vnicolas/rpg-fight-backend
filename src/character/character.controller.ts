@@ -3,7 +3,6 @@ import {
   Get,
   Res,
   HttpStatus,
-  NotFoundException,
   Param,
   BadRequestException,
 } from '@nestjs/common';
@@ -18,8 +17,12 @@ export class CharacterController {
   // Retrieve characters list
   @Get()
   async getAllCharacter(@Res() res) {
-    const characters: Character[] = await this.characterService.getAllCharacters();
-    return res.status(HttpStatus.OK).json(characters);
+    try {
+      const characters: Character[] = await this.characterService.getAllCharacters();
+      return res.status(HttpStatus.OK).json(characters);
+    } catch (err) {
+      throw err;
+    }
   }
 
   // Fetch a particular character using ID
@@ -28,10 +31,12 @@ export class CharacterController {
     if (characterId.length !== objectIdCharactersNumber) {
       throw new BadRequestException();
     }
-    const character = await this.characterService.getCharacter(characterId);
-    if (!character) {
-      throw new NotFoundException('Character does not exist');
+
+    try {
+      const character = await this.characterService.getCharacter(characterId);
+      return res.status(HttpStatus.OK).json(character);
+    } catch (err) {
+      throw err;
     }
-    return res.status(HttpStatus.OK).json(character);
   }
 }

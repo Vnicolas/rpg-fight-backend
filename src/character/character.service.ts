@@ -24,7 +24,11 @@ export class CharacterService {
 
   // Get a single character
   async getCharacter(characterID: string): Promise<Character> {
-    return await this.characterRepository.findOne(characterID);
+    const character = await this.characterRepository.findOne(characterID);
+    if (!character) {
+      throw new NotFoundException('Character does not exist');
+    }
+    return character;
   }
 
   // Get all character for a user
