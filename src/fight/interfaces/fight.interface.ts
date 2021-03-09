@@ -4,14 +4,13 @@
 **/
 
 import { Document, ObjectId } from 'mongoose';
+import { ITurn } from './turn.interface';
 
 export interface IFight extends Document {
-  readonly winner: ObjectId;
-  readonly looser: ObjectId;
-  readonly turns: number;
-  readonly winnerAttackValue: number;
-  readonly looserAttackValue: number;
-  readonly winnerHPSubstracted: number;
-  readonly looserHPSubstracted: number;
-  readonly created_at: Date;
+  winnerOwner: ObjectId;
+  looserOwner: ObjectId;
+  looser: ObjectId;
+  winner: ObjectId;
+  turns: ITurn[];
+  created_at: Date;
 }
