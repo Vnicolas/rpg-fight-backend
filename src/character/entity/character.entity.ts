@@ -16,7 +16,8 @@ export class Character {
   @Column() defense: number = 0;
   @Column() magik: number = 0;
   @Column() fights: MongoObjectID[] = [];
-  @Column() status: CharacterStatus = CharacterStatus.AVAILABLE;
+  @Column() status: CharacterStatus = CharacterStatus.NOT_READY;
+  @Column() restEndDate: Date;
   constructor(character?: CharacterDTO) {
     Object.assign(this, character);
   }

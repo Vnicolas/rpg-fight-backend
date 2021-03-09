@@ -10,6 +10,7 @@ import { MongoRepository } from 'typeorm';
 import { ObjectID as MongoObjectID } from 'mongodb';
 import Avatars from '@dicebear/avatars';
 import sprites from '@dicebear/avatars-bottts-sprites';
+import { CharacterStatus } from './interfaces/character.interface';
 
 @Injectable()
 export class CharacterService {
@@ -65,6 +66,12 @@ export class CharacterService {
     );
     if (!existingCharacter) {
       throw new NotFoundException();
+    }
+    if (
+      existingCharacter.status === CharacterStatus.NOT_READY &&
+      characterDTO.attack > 0
+    ) {
+      characterDTO.status = CharacterStatus.READY;
     }
     const { fights, owner, ...character } = characterDTO;
     await this.characterRepository.update(characterID, character);
