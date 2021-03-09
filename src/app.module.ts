@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { CharacterModule } from './character/character.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FightModule } from './fight/fight.module';
+import { EventsModule } from './ws/events/events.module';
 require('dotenv').config();
 
 const DB_HOST = process.env.DB_HOST;
@@ -27,6 +28,7 @@ const DB_NAME = process.env.DB_NAME;
     UserModule,
     FightModule,
     CharacterModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
