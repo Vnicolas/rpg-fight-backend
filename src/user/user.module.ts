@@ -10,5 +10,6 @@ import { Character } from "src/character/entity/character.entity";
   imports: [TypeOrmModule.forFeature([User, Character])],
   controllers: [UserController],
   providers: [UserService, CharacterService],
+  exports: [UserService, CharacterService],
 })
 export class UserModule {}

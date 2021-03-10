@@ -1,5 +1,6 @@
 import { Document } from "mongoose";
 import { IFight } from "src/fight/interfaces/fight.interface";
+import { User } from "src/user/entities/user.entity";
 import { IUser } from "src/user/interfaces/user.interface";
 
 export enum CharacterStatus {
@@ -11,7 +12,7 @@ export enum CharacterStatus {
 
 export interface ICharacter extends Document {
   readonly picture: string;
-  readonly owner: IUser;
+  owner: IUser | User;
   readonly name: string;
   readonly skillPoints: number;
   readonly rank: number;

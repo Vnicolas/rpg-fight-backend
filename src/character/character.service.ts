@@ -19,7 +19,10 @@ export class CharacterService {
     private readonly characterRepository: MongoRepository<Character>
   ) {}
   // Fetch all characters
-  async getAllCharacters(): Promise<Character[]> {
+  async getAllCharacters(options?: any): Promise<Character[]> {
+    if (options) {
+      return await this.characterRepository.find({ ...options });
+    }
     return await this.characterRepository.find();
   }
 

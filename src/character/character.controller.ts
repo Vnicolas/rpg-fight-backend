@@ -30,7 +30,7 @@ export class CharacterController {
 
   // Fetch a particular character using ID
   @Get(":characterId")
-  async getCustomer(
+  async getCharacter(
     @Res() res,
     @Param("characterId") characterId: string
   ): Promise<any> {
