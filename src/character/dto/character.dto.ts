@@ -1,11 +1,10 @@
-/**
-  A data transfer object will define how data will be sent on over the network
-**/
+import { ObjectId } from "mongoose";
+import { ObjectID as MongoObjectID } from "mongodb";
+import { CharacterStatus } from "../interfaces/character.interface";
 
-import { ObjectId } from 'mongoose';
-import { ObjectID as MongoObjectID } from 'mongodb';
-import { CharacterStatus } from '../interfaces/character.interface';
-
+/*
+ * A data transfer object will define how data will be sent on over the network
+ */
 export class CharacterDTO {
   picture: string;
   owner: MongoObjectID;

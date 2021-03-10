@@ -1,6 +1,6 @@
-import { Controller } from '@nestjs/common';
+import { Controller } from "@nestjs/common";
 
-@Controller('fights')
+@Controller("fights")
 export class FightController {
   constructor() {}
 }

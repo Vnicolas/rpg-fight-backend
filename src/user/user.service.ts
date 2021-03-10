@@ -1,19 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserDTO } from './dto/user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { MongoRepository } from 'typeorm';
-import { ObjectId } from 'mongodb';
-import { Character } from 'src/character/entity/character.entity';
-import { CharacterService } from 'src/character/character.service';
-import { IUser } from './interfaces/user.interface';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { UserDTO } from "./dto/user.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "./entities/user.entity";
+import { MongoRepository } from "typeorm";
+import { ObjectId } from "mongodb";
+import { Character } from "src/character/entity/character.entity";
+import { CharacterService } from "src/character/character.service";
+import { IUser } from "./interfaces/user.interface";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: MongoRepository<User>,
-    private characterService: CharacterService,
+    private characterService: CharacterService
   ) {}
 
   // Fetch all users
@@ -26,7 +26,7 @@ export class UserService {
   async getUser(userID: string, populate = true): Promise<User | IUser> {
     const user = await this.usersRepository.findOne(userID);
     if (!user) {
-      throw new NotFoundException('User does not exist !');
+      throw new NotFoundException("User does not exist !");
     }
     if (populate) {
       return await this.populateUser(user);
@@ -38,7 +38,7 @@ export class UserService {
   async getUserByName(name: string, justCheck = false): Promise<User> {
     const user = await this.usersRepository.findOne({ name });
     if (!user && !justCheck) {
-      throw new NotFoundException('User does not exist !');
+      throw new NotFoundException("User does not exist !");
     }
     return user;
   }
@@ -57,21 +57,21 @@ export class UserService {
   // Delete a character to user
   async deleteCharacterToUser(
     userId: string,
-    characterId: string,
+    characterId: string
   ): Promise<User> {
     const user = (await this.getUser(userId, false)) as User;
-    const userCharacters = user.characters.map((characterId: ObjectId) =>
-      JSON.parse(JSON.stringify(characterId)),
+    const userCharacters = user.characters.map((id: ObjectId) =>
+      JSON.parse(JSON.stringify(id))
     );
     const characterIndex = userCharacters.indexOf(characterId);
     if (characterIndex < 0) {
       throw new NotFoundException("User don't have this Character");
     }
     const characterToDelete = await this.characterService.getCharacter(
-      characterId,
+      characterId
     );
     if (!characterToDelete) {
-      throw new NotFoundException('Character does not exist');
+      throw new NotFoundException("Character does not exist");
     }
 
     user.characters.splice(characterIndex, 1);
@@ -83,7 +83,7 @@ export class UserService {
   // Retrieve all user's characters
   async populateUser(user: User): Promise<User | IUser> {
     const userCharacters = await this.characterService.getCharacters(
-      user.characters,
+      user.characters
     );
     const userToDisplay = JSON.parse(JSON.stringify(user));
     userToDisplay.characters = userCharacters;

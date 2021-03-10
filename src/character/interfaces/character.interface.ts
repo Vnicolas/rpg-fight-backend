@@ -1,17 +1,12 @@
-/**
-  Will be used for type-checking and to determine the type
-  of values that will be received by the application
-**/
-
-import { Document } from 'mongoose';
-import { IFight } from 'src/fight/interfaces/fight.interface';
-import { IUser } from 'src/user/interfaces/user.interface';
+import { Document } from "mongoose";
+import { IFight } from "src/fight/interfaces/fight.interface";
+import { IUser } from "src/user/interfaces/user.interface";
 
 export enum CharacterStatus {
-  NOT_READY = 'Not Ready',
-  READY = 'Ready',
-  IN_FIGHT = 'In Fight',
-  RESTING = 'Resting',
+  NOT_READY = "Not Ready",
+  READY = "Ready",
+  IN_FIGHT = "In Fight",
+  RESTING = "Resting",
 }
 
 export interface ICharacter extends Document {
