@@ -7,29 +7,29 @@ import {
 } from "@nestjs/websockets";
 import { CharacterService } from "src/character/character.service";
 import { Character } from "src/character/entity/character.entity";
-import {
-  CharacterStatus,
-  ICharacter,
-} from "src/character/interfaces/character.interface";
-import { getClosestFighterByRank } from "src/shared/utils";
-import { UserService } from "src/user/user.service";
+import { CharacterStatus } from "src/character/interfaces/character.interface";
+import { randomIntFromInterval } from "src/shared/utils";
+import { EventsService } from "./events.service";
+import { IFighter } from "./interfaces/fighter.interface";
 
 @WebSocketGateway()
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  private reponseDelay = 1500; // in ms
+
   constructor(
     private characterService: CharacterService,
-    private userService: UserService
+    private eventsService: EventsService
   ) {}
 
   @WebSocketServer() server;
 
   handleConnection(client): void {
-    console.log("user connected !");
+    console.log("user connected to lobby");
     client.emit("connected");
   }
 
   handleDisconnect(): void {
-    console.log("user disconnected !");
+    console.log("user left lobby");
   }
 
   @SubscribeMessage("search-opponent")
@@ -49,17 +49,24 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const opponentsNotOwned = opponents.filter((fighter: Character) => {
         return JSON.parse(JSON.stringify(fighter.owner)) !== message.userId;
       });
-      const fighterByRank = getClosestFighterByRank(
+      const opponentAndOwner: IFighter = await this.eventsService.findOpponentByRank(
         clientFighter.rank,
         opponentsNotOwned
       );
-      const opponentOwner = await this.userService.getUser(
-        JSON.parse(JSON.stringify(fighterByRank.owner))
-      );
-      const ownerName = opponentOwner.name;
+      if (opponentAndOwner.error) {
+        return client.emit("error", opponentAndOwner.error);
+      }
+      const fighterByRank = opponentAndOwner.fighterByRank;
+      const ownerName = opponentAndOwner.ownerName;
       setTimeout(() => {
         client.emit("opponent-found", { fighterByRank, ownerName });
-      }, 1500);
+      }, this.reponseDelay);
+      // TODO: Compute in service (interval), use TurnInterface
+      setTimeout(() => {
+        const diceResult = randomIntFromInterval(clientFighter.attack);
+        const diceOpponentResult = randomIntFromInterval(fighterByRank.attack);
+        client.emit("dice-result", { diceResult, diceOpponentResult });
+      }, this.reponseDelay + 500);
     } catch (err) {
       client.emit("error", err);
     }

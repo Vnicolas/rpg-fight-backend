@@ -17,3 +17,7 @@ export function getClosestFighterByRank(
     }
   });
 }
+
+export function randomIntFromInterval(max: number): number {
+  return Math.floor(Math.random() * max) + 1;
+}
