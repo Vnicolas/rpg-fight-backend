@@ -26,7 +26,6 @@ const DB_NAME = process.env.DB_NAME;
       useNewUrlParser: true,
     }),
     UserModule,
-    FightModule,
     CharacterModule,
     EventsModule,
   ],

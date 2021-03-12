@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { SchedulerRegistry } from "@nestjs/schedule";
 import { ITurn } from "src/fight/interfaces/turn.interface";
 import { IResult } from "src/fight/interfaces/results.interface";
+import { ObjectID as MongoObjectID } from "mongodb";
 import {
   getClosestFighterByRank,
   randomIntFromInterval,
@@ -10,6 +11,8 @@ import { UserService } from "src/user/user.service";
 import { IFighter } from "./interfaces/fighter.interface";
 import { Subject } from "rxjs";
 import { ICharacter } from "src/character/interfaces/character.interface";
+import { IFight } from "src/fight/interfaces/fight.interface";
+import { FightDTO } from "src/fight/dto/fight.dto";
 
 @Injectable()
 export class EventsService {
@@ -89,6 +92,8 @@ export class EventsService {
     }
     const fighterResult: IResult = {
       characterName: fighter.name,
+      characterId: fighter._id,
+      characterOwner: new MongoObjectID(String(fighter.owner)),
       result: fighterAttackResult,
       magikPointsAdded,
       opponentHpResult,
@@ -115,6 +120,35 @@ export class EventsService {
     return [fighterAttackResult, opponentAttackResult];
   }
 
+  getFightResults(turns: ITurn[]): FightDTO {
+    const lastTurn = turns.find((turn: ITurn) => turn.isLast === true);
+    const fighterResult = lastTurn.attackResults[0];
+    const opponentResult = lastTurn.attackResults[1];
+    let winnerOwner: MongoObjectID;
+    let looserOwner: MongoObjectID;
+    let winner: MongoObjectID;
+    let looser: MongoObjectID;
+    if (fighterResult.opponentHpResult <= 0) {
+      winner = fighterResult.characterId;
+      looser = opponentResult.characterId;
+      winnerOwner = fighterResult.characterOwner;
+      looserOwner = opponentResult.characterOwner;
+    } else {
+      winner = opponentResult.characterId;
+      looser = fighterResult.characterId;
+      winnerOwner = opponentResult.characterOwner;
+      looserOwner = fighterResult.characterOwner;
+    }
+    const fightToSave: FightDTO = {
+      winnerOwner,
+      looserOwner,
+      winner: new MongoObjectID(winner),
+      looser: new MongoObjectID(looser),
+      turns,
+    };
+    return fightToSave;
+  }
+
   getTurnResults(clientFighter: ICharacter, opponent: ICharacter): void {
     const dicesResults = this.getDicesResults(clientFighter, opponent);
     const attackResults = this.getAttackResults(
@@ -125,13 +159,13 @@ export class EventsService {
     );
 
     const isLast = this.isLastTurn(attackResults);
-    this.gameEnded$.next(isLast);
     this.turnResults$.next({
       dicesResults,
       attackResults,
       number: this.turnNumber,
       isLast,
     });
+    this.gameEnded$.next(isLast);
   }
 
   launchFight(fighter: ICharacter, opponent: ICharacter): void {

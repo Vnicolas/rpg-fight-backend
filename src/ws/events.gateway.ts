@@ -5,15 +5,16 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from "@nestjs/websockets";
+import { Socket } from "socket.io";
 import { CharacterService } from "src/character/character.service";
 import {
   CharacterStatus,
   ICharacter,
 } from "src/character/interfaces/character.interface";
+import { FightService } from "src/fight/fight.service";
 import { ITurn } from "src/fight/interfaces/turn.interface";
 import { EventsService } from "./events.service";
 import { IFighter } from "./interfaces/fighter.interface";
-import { IFight } from "../fight/interfaces/fight.interface";
 
 @WebSocketGateway()
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -22,25 +23,35 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     private characterService: CharacterService,
-    private eventsService: EventsService
+    private eventsService: EventsService,
+    private fightService: FightService
   ) {}
 
   @WebSocketServer() server;
 
-  handleConnection(client): void {
+  handleConnection(client: Socket): void {
     console.log("user connected to lobby");
     client.emit("connected");
   }
 
-  handleDisconnect(client): void {
+  handleDisconnect(client: Socket): void {
     delete this.fights[client.id];
     console.log("user left lobby " + client.id);
   }
 
-  subscribeToFightEvents(client, fighterId: string): void {
-    this.eventsService.gameEnded$.subscribe((gameEnded: boolean) => {
+  subscribeToFightEvents(client: Socket, fighterId: string): void {
+    this.eventsService.gameEnded$.subscribe(async (gameEnded: boolean) => {
       if (gameEnded) {
         this.eventsService.stopFight(fighterId);
+        // Save fight
+        if (!this.fights[client.id]) {
+          return;
+        }
+        const fightResults = this.eventsService.getFightResults(
+          this.fights[client.id].turns
+        );
+        const fightSaved = await this.fightService.addFight(fightResults);
+        client.emit("end", fightSaved);
       }
     });
 
@@ -54,7 +65,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage("search-opponent")
   async handleEvent(
-    client,
+    client: Socket,
     message: { userId: string; fighter: ICharacter }
   ): Promise<void> {
     client.emit("searching");
@@ -76,7 +87,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         opponentsNotOwned
       );
       if (opponentAndOwner.error) {
-        return client.emit("error", opponentAndOwner.error);
+        client.emit("error", opponentAndOwner.error);
+        return;
       }
       const fighterByRank = opponentAndOwner.fighterByRank;
       const ownerName = opponentAndOwner.ownerName;

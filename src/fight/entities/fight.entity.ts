@@ -1,9 +1,17 @@
-import { Entity, ObjectID, ObjectIdColumn, Column } from "typeorm";
+import {
+  Entity,
+  ObjectID,
+  ObjectIdColumn,
+  Column,
+  BeforeInsert,
+} from "typeorm";
 import { ObjectID as MongoObjectID } from "mongodb";
+import { FightDTO } from "../dto/fight.dto";
 
 @Entity("fights")
 export class Fight {
-  @ObjectIdColumn() id: ObjectID;
+  // tslint:disable-next-line: variable-name
+  @ObjectIdColumn() _id: ObjectID;
   @Column() turns = 0;
   @Column() winnerAttackValue: number;
   @Column() looserAttackValue: number;
@@ -11,4 +19,14 @@ export class Fight {
   @Column() looserHPSubstracted: number;
   @Column() winner: MongoObjectID;
   @Column() looser: MongoObjectID;
+  @Column() createdAt: Date;
+
+  @BeforeInsert()
+  async setDate(): Promise<void> {
+    this.createdAt = new Date();
+  }
+
+  constructor(fight?: FightDTO) {
+    Object.assign(this, fight);
+  }
 }

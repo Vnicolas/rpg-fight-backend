@@ -23,8 +23,8 @@ export class UserService {
   }
 
   // Fetch a single user
-  async getUser(userID: string, populate = true): Promise<User | IUser> {
-    const user = await this.usersRepository.findOne(userID);
+  async getUser(userId: string, populate = true): Promise<User | IUser> {
+    const user = await this.usersRepository.findOne(userId);
     if (!user) {
       throw new NotFoundException("User does not exist !");
     }

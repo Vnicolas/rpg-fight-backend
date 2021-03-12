@@ -1,4 +1,3 @@
-import { ObjectId } from "mongoose";
 import { ObjectID as MongoObjectID } from "mongodb";
 import { CharacterStatus } from "../interfaces/character.interface";
 
@@ -15,6 +14,6 @@ export class CharacterDTO {
   readonly attack: number = 0;
   readonly defense: number = 0;
   readonly magik: number = 0;
-  readonly fights: ObjectId[] = [];
+  readonly fights: MongoObjectID[] = [];
   status: CharacterStatus;
 }
