@@ -13,13 +13,14 @@ export enum CharacterStatus {
 export interface ICharacter extends Document {
   readonly picture: string;
   owner: IUser | User;
+  health: number;
+  baseHealth: number;
+  fights: IFight[];
   readonly name: string;
   readonly skillPoints: number;
   readonly rank: number;
-  readonly health: number;
   readonly attack: number;
   readonly defense: number;
   readonly magik: number;
-  readonly fights: IFight[];
   readonly status: CharacterStatus;
 }

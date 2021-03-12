@@ -1,12 +1,12 @@
-import { Character } from "src/character/entity/character.entity";
+import { ICharacter } from "src/character/interfaces/character.interface";
 
 export const objectIdCharactersNumber = 24;
 export const maxCharactersAllowedPerUser = 10;
 export function getClosestFighterByRank(
   fighterRank: number,
-  fighterArray: Character[]
-): Character {
-  return fighterArray.reduce((a: Character, b: Character) => {
+  fighterArray: ICharacter[]
+): ICharacter {
+  return fighterArray.reduce((a: ICharacter, b: ICharacter) => {
     const aDiff = Math.abs(a.rank - fighterRank);
     const bDiff = Math.abs(b.rank - fighterRank);
 

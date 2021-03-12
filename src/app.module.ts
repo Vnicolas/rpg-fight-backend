@@ -4,6 +4,7 @@ import { CharacterModule } from "./character/character.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { FightModule } from "./fight/fight.module";
 import { EventsModule } from "./ws/events.module";
+import { ScheduleModule } from "@nestjs/schedule";
 require("dotenv").config();
 
 const DB_HOST = process.env.DB_HOST;
@@ -14,6 +15,7 @@ const DB_NAME = process.env.DB_NAME;
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: "mongodb",
       url: MONGO_URL,

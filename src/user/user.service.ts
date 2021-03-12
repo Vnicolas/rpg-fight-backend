@@ -60,9 +60,7 @@ export class UserService {
     characterId: string
   ): Promise<User> {
     const user = (await this.getUser(userId, false)) as User;
-    const userCharacters = user.characters.map((id: ObjectId) =>
-      JSON.parse(JSON.stringify(id))
-    );
+    const userCharacters = user.characters.map((id: ObjectId) => String(id));
     const characterIndex = userCharacters.indexOf(characterId);
     if (characterIndex < 0) {
       throw new NotFoundException("User don't have this Character");

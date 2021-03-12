@@ -6,10 +6,10 @@ import { ITurn } from "./turn.interface";
  * of values that will be received by the application
  */
 export interface IFight extends Document {
-  winnerOwner: ObjectId;
-  looserOwner: ObjectId;
-  looser: ObjectId;
-  winner: ObjectId;
+  winnerOwner?: ObjectId;
+  looserOwner?: ObjectId;
+  looser?: ObjectId;
+  winner?: ObjectId;
   turns: ITurn[];
-  created_at: Date;
+  created_at?: Date;
 }

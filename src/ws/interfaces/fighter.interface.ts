@@ -1,7 +1,7 @@
-import { Character } from "src/character/entity/character.entity";
+import { ICharacter } from "src/character/interfaces/character.interface";
 
 export interface IFighter {
-  fighterByRank?: Character;
+  fighterByRank?: ICharacter;
   ownerName?: string;
   error?: string;
 }

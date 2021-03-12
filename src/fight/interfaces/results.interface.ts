@@ -1,9 +1,6 @@
-export interface IResults {
+export interface IResult {
   characterName: string;
   result: number;
-}
-
-export interface IResultsWS {
-  you: string;
-  opponent: number;
+  magikPointsAdded?: boolean;
+  opponentHpResult?: number;
 }
