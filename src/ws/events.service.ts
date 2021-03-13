@@ -8,10 +8,8 @@ import {
   randomIntFromInterval,
 } from "src/shared/utils";
 import { UserService } from "src/user/user.service";
-import { IFighter } from "./interfaces/fighter.interface";
 import { Subject } from "rxjs";
 import { ICharacter } from "src/character/interfaces/character.interface";
-import { IFight } from "src/fight/interfaces/fight.interface";
 import { FightDTO } from "src/fight/dto/fight.dto";
 
 @Injectable()
@@ -29,16 +27,14 @@ export class EventsService {
   async findOpponentByRank(
     fighterRank: number,
     opponents: ICharacter[]
-  ): Promise<IFighter> {
-    const fighterByRank = getClosestFighterByRank(fighterRank, opponents);
-    const opponentOwner = await this.userService.getUser(
-      String(fighterByRank.owner)
-    );
+  ): Promise<ICharacter> {
+    const fighter = getClosestFighterByRank(fighterRank, opponents);
+    const opponentOwner = await this.userService.getUser(String(fighter.owner));
     if (!opponentOwner) {
-      return { error: "Opponent owner not found" };
+      return Promise.reject(undefined);
     }
-    const ownerName = opponentOwner.name;
-    return { fighterByRank, ownerName };
+    fighter.ownerName = opponentOwner.name;
+    return fighter;
   }
 
   isLastTurn(attackResults: IResult[]): boolean {
@@ -120,30 +116,42 @@ export class EventsService {
     return [fighterAttackResult, opponentAttackResult];
   }
 
-  getFightResults(turns: ITurn[]): FightDTO {
+  getFightResults(
+    turns: ITurn[],
+    fighterOwnerName: string,
+    opponentOwnerName: string
+  ): FightDTO {
     const lastTurn = turns.find((turn: ITurn) => turn.isLast === true);
     const fighterResult = lastTurn.attackResults[0];
     const opponentResult = lastTurn.attackResults[1];
-    let winnerOwner: MongoObjectID;
-    let looserOwner: MongoObjectID;
-    let winner: MongoObjectID;
-    let looser: MongoObjectID;
+    let fightWinnerOwnerName;
+    let fightLooserOwnerName;
+    let winnerName;
+    let looserName;
+    let winnerId: MongoObjectID;
+    let looserId: MongoObjectID;
     if (fighterResult.opponentHpResult <= 0) {
-      winner = fighterResult.characterId;
-      looser = opponentResult.characterId;
-      winnerOwner = fighterResult.characterOwner;
-      looserOwner = opponentResult.characterOwner;
+      winnerName = fighterResult.characterName;
+      looserName = opponentResult.characterName;
+      winnerId = fighterResult.characterId;
+      looserId = opponentResult.characterId;
+      fightWinnerOwnerName = fighterOwnerName;
+      fightLooserOwnerName = opponentOwnerName;
     } else {
-      winner = opponentResult.characterId;
-      looser = fighterResult.characterId;
-      winnerOwner = opponentResult.characterOwner;
-      looserOwner = fighterResult.characterOwner;
+      winnerName = opponentResult.characterName;
+      looserName = fighterResult.characterName;
+      winnerId = opponentResult.characterId;
+      looserId = fighterResult.characterId;
+      fightWinnerOwnerName = opponentOwnerName;
+      fightLooserOwnerName = fighterOwnerName;
     }
     const fightToSave: FightDTO = {
-      winnerOwner,
-      looserOwner,
-      winner: new MongoObjectID(winner),
-      looser: new MongoObjectID(looser),
+      winnerOwnerName: fightWinnerOwnerName,
+      looserOwnerName: fightLooserOwnerName,
+      winnerName,
+      looserName,
+      winnerId: new MongoObjectID(winnerId),
+      looserId: new MongoObjectID(looserId),
       turns,
     };
     return fightToSave;
@@ -190,7 +198,6 @@ export class EventsService {
     const intervals = this.schedulerRegistry.getIntervals();
     if (intervals.includes(fighterId)) {
       this.schedulerRegistry.deleteInterval(fighterId);
-      // TODO: save fight ONLY IF it's terminated
     }
   }
 }

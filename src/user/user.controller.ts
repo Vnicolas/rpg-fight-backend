@@ -13,6 +13,7 @@ import { UserService } from "./user.service";
 import { UserDTO } from "./dto/user.dto";
 import { User } from "./entities/user.entity";
 import { CharacterDTO } from "src/character/dto/character.dto";
+import { Character } from "src/character/entity/character.entity";
 import { CharacterService } from "src/character/character.service";
 import { compare as bcryptCompare } from "bcrypt";
 import { UserLoginDTO } from "./dto/user.login.dto";
@@ -40,7 +41,7 @@ export class UserController {
 
   // Fetch a particular user using ID
   @Get(":userId")
-  async getUser(@Res() res, @Param("userId") userId: string): Promise<any> {
+  async getUser(@Res() res, @Param("userId") userId: string): Promise<User> {
     if (userId.length !== objectIdCharactersNumber) {
       throw new BadRequestException();
     }
@@ -55,7 +56,7 @@ export class UserController {
 
   // Add a user
   @Post()
-  async addUser(@Res() res, @Body() userDTO: UserDTO): Promise<any> {
+  async addUser(@Res() res, @Body() userDTO: UserDTO): Promise<User> {
     if (!userDTO.name || !userDTO.password) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: `Please fill all the fields, name or password missing`,
@@ -84,7 +85,7 @@ export class UserController {
   async signinUser(
     @Res() res,
     @Body() userLoginDTO: UserLoginDTO
-  ): Promise<any> {
+  ): Promise<User> {
     try {
       const user: User = await this.userService.getUserByName(
         userLoginDTO.name
@@ -106,7 +107,7 @@ export class UserController {
     @Res() res,
     @Param("userId") userId: string,
     @Body() characterDTO: CharacterDTO
-  ): Promise<any> {
+  ): Promise<Character> {
     if (userId.length !== objectIdCharactersNumber) {
       throw new BadRequestException();
     }
@@ -147,7 +148,7 @@ export class UserController {
     @Res() res,
     @Param("userId") userId: string,
     @Param("characterId") characterId: string
-  ): Promise<any> {
+  ): Promise<User> {
     if (
       userId.length !== objectIdCharactersNumber ||
       characterId.length !== objectIdCharactersNumber

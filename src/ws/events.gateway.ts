@@ -14,7 +14,6 @@ import {
 import { FightService } from "src/fight/fight.service";
 import { ITurn } from "src/fight/interfaces/turn.interface";
 import { EventsService } from "./events.service";
-import { IFighter } from "./interfaces/fighter.interface";
 
 @WebSocketGateway()
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -39,17 +38,24 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log("user left lobby " + client.id);
   }
 
-  subscribeToFightEvents(client: Socket, fighterId: string): void {
+  subscribeToFightEvents(
+    client: Socket,
+    fighter: ICharacter,
+    opponent: ICharacter
+  ): void {
     this.eventsService.gameEnded$.subscribe(async (gameEnded: boolean) => {
       if (gameEnded) {
-        this.eventsService.stopFight(fighterId);
+        this.eventsService.stopFight(String(fighter._id));
         // Save fight
         if (!this.fights[client.id]) {
           return;
         }
         const fightResults = this.eventsService.getFightResults(
-          this.fights[client.id].turns
+          this.fights[client.id].turns,
+          fighter.ownerName,
+          opponent.ownerName
         );
+
         const fightSaved = await this.fightService.addFight(fightResults);
         client.emit("end", fightSaved);
       }
@@ -82,16 +88,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const opponentsNotOwned = opponentsJson.filter((fighter: ICharacter) => {
         return String(fighter.owner) !== message.userId;
       });
-      const opponentAndOwner: IFighter = await this.eventsService.findOpponentByRank(
+      const opponent: ICharacter = await this.eventsService.findOpponentByRank(
         clientFighter.rank,
         opponentsNotOwned
       );
-      if (opponentAndOwner.error) {
-        client.emit("error", opponentAndOwner.error);
-        return;
-      }
-      const fighterByRank = opponentAndOwner.fighterByRank;
-      const ownerName = opponentAndOwner.ownerName;
 
       if (!this.fights[client.id]) {
         this.fights[client.id] = {
@@ -99,10 +99,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         };
       }
 
-      this.subscribeToFightEvents(client, String(clientFighter._id));
+      this.subscribeToFightEvents(client, clientFighter, opponent);
       setTimeout(() => {
-        client.emit("opponent-found", { fighterByRank, ownerName });
-        this.eventsService.launchFight(clientFighter, fighterByRank);
+        client.emit("opponent-found", opponent);
+        this.eventsService.launchFight(clientFighter, opponent);
       }, this.reponseDelay);
     } catch (err) {
       client.emit("error", err);

@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { MongoRepository } from "typeorm";
 import { Fight } from "./entities/fight.entity";
 import { FightDTO } from "./dto/fight.dto";
+import { ObjectID as MongoObjectID } from "mongodb";
 
 @Injectable()
 export class FightService {
@@ -12,8 +13,22 @@ export class FightService {
   ) {}
 
   // Fetch all fights
-  async getAllFights(): Promise<Fight[]> {
-    const fights = await this.fightRepository.find();
+  async getAllFights(characterId: string): Promise<Fight[]> {
+    const fights = await this.fightRepository.find({
+      where: {
+        $or: [
+          {
+            winnerId: new MongoObjectID(characterId),
+          },
+          {
+            looserId: new MongoObjectID(characterId),
+          },
+        ],
+      },
+    });
+    if (fights.length === 0) {
+      throw new NotFoundException("No Fights exist fot this character");
+    }
     return fights;
   }
 
@@ -21,7 +36,7 @@ export class FightService {
   async getFight(fightId: string): Promise<Fight> {
     const fight = await this.fightRepository.findOne(fightId);
     if (!fight) {
-      throw new NotFoundException("Fight does not exist !");
+      throw new NotFoundException("Fight does not exist");
     }
     return fight;
   }

@@ -6,9 +6,11 @@ import { ObjectID as MongoObjectID } from "mongodb";
  * of values that will be received by the application
  */
 export interface IFight {
-  winnerOwner?: MongoObjectID;
-  looserOwner?: MongoObjectID;
-  looser?: MongoObjectID;
-  winner?: MongoObjectID;
+  winnerId?: MongoObjectID;
+  looserId?: MongoObjectID;
+  winnerName?: string;
+  looserName?: string;
+  winnerOwnerName?: string;
+  looserOwnerName?: string;
   turns: ITurn[];
 }

@@ -8,6 +8,8 @@ import {
   Patch,
   Body,
 } from "@nestjs/common";
+import { Fight } from "src/fight/entities/fight.entity";
+import { FightService } from "src/fight/fight.service";
 import { objectIdCharactersNumber } from "src/shared/utils";
 import { CharacterService } from "./character.service";
 import { CharacterDTO } from "./dto/character.dto";
@@ -15,11 +17,14 @@ import { Character } from "./entity/character.entity";
 
 @Controller("characters")
 export class CharacterController {
-  constructor(private characterService: CharacterService) {}
+  constructor(
+    private characterService: CharacterService,
+    private fightService: FightService
+  ) {}
 
   // Retrieve characters list
   @Get()
-  async getAllCharacter(@Res() res): Promise<any> {
+  async getAllCharacter(@Res() res): Promise<Character[]> {
     try {
       const characters: Character[] = await this.characterService.getAllCharacters();
       return res.status(HttpStatus.OK).json(characters);
@@ -33,7 +38,7 @@ export class CharacterController {
   async getCharacter(
     @Res() res,
     @Param("characterId") characterId: string
-  ): Promise<any> {
+  ): Promise<Character> {
     if (characterId.length !== objectIdCharactersNumber) {
       throw new BadRequestException();
     }
@@ -52,7 +57,7 @@ export class CharacterController {
     @Res() res,
     @Param("characterId") characterId: string,
     @Body() characterDTO: CharacterDTO
-  ): Promise<any> {
+  ): Promise<Character> {
     if (characterId.length !== objectIdCharactersNumber) {
       throw new BadRequestException();
     }
@@ -63,6 +68,24 @@ export class CharacterController {
         characterDTO
       );
       return res.status(HttpStatus.OK).json(characterUpdated);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Fetch all fights for a character
+  @Get(":characterId/fights")
+  async getFight(
+    @Res() res,
+    @Param("characterId") characterId: string
+  ): Promise<Fight[]> {
+    if (characterId.length !== objectIdCharactersNumber) {
+      throw new BadRequestException();
+    }
+
+    try {
+      const fights = await this.fightService.getAllFights(characterId);
+      return res.status(HttpStatus.OK).json(fights);
     } catch (err) {
       throw err;
     }

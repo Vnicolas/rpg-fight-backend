@@ -2,9 +2,11 @@ import { ObjectID as MongoObjectID } from "mongodb";
 import { ITurn } from "../interfaces/turn.interface";
 
 export class FightDTO {
-  winnerOwner: MongoObjectID;
-  looserOwner: MongoObjectID;
-  winner: MongoObjectID;
-  looser: MongoObjectID;
+  winnerId: MongoObjectID;
+  looserId: MongoObjectID;
+  winnerName: string;
+  looserName: string;
+  winnerOwnerName: string;
+  looserOwnerName: string;
   turns: ITurn[];
 }
