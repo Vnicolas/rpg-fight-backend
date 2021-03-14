@@ -5,12 +5,19 @@ import { IResult } from "src/fight/interfaces/results.interface";
 import { ObjectID as MongoObjectID } from "mongodb";
 import {
   getClosestFighterByRank,
+  getRestingEndDate,
   randomIntFromInterval,
 } from "src/shared/utils";
 import { UserService } from "src/user/user.service";
 import { Subject } from "rxjs";
-import { ICharacter } from "src/character/interfaces/character.interface";
+import {
+  CharacterStatus,
+  ICharacter,
+} from "src/character/interfaces/character.interface";
 import { FightDTO } from "src/fight/dto/fight.dto";
+import { Character } from "src/character/entity/character.entity";
+import { CharacterService } from "src/character/character.service";
+import { CharacterDTO } from "src/character/dto/character.dto";
 
 @Injectable()
 export class EventsService {
@@ -21,8 +28,36 @@ export class EventsService {
 
   constructor(
     private userService: UserService,
+    private characterService: CharacterService,
     private schedulerRegistry: SchedulerRegistry
   ) {}
+
+  async updateCharacter(
+    characterId: string,
+    character: ICharacter,
+    isWinner: boolean
+  ): Promise<Character> {
+    try {
+      const payload: CharacterDTO = {};
+      if (isWinner) {
+        payload.rank = character.rank + 1;
+        payload.skillPoints = character.skillPoints + 1;
+      } else {
+        if (character.rank >= 2) {
+          payload.rank = character.rank - 1;
+          payload.status = CharacterStatus.RESTING;
+          payload.restEndDate = getRestingEndDate();
+        } else {
+          payload.status = CharacterStatus.RESTING;
+          payload.restEndDate = getRestingEndDate();
+        }
+      }
+      return await this.characterService.updateCharacter(characterId, payload);
+    } catch (error) {
+      console.log(error);
+      return Promise.reject("Update Character failed");
+    }
+  }
 
   async findOpponentByRank(
     fighterRank: number,
@@ -88,7 +123,7 @@ export class EventsService {
     }
     const fighterResult: IResult = {
       characterName: fighter.name,
-      characterId: fighter._id,
+      characterId: new MongoObjectID(fighter._id),
       characterOwner: new MongoObjectID(String(fighter.owner)),
       result: fighterAttackResult,
       magikPointsAdded,

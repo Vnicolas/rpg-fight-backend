@@ -56,6 +56,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           opponent.ownerName
         );
 
+        const winnerIdString = String(fightResults.winnerId);
+        let isWinner = false;
+        let winner = opponent;
+        if (winnerIdString === fighter._id) {
+          winner = fighter;
+          isWinner = true;
+        }
+        this.eventsService.updateCharacter(winner._id, winner, isWinner);
+        this.eventsService.updateCharacter(opponent._id, opponent, !isWinner);
         const fightSaved = await this.fightService.addFight(fightResults);
         client.emit("end", fightSaved);
       }
