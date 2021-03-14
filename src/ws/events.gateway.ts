@@ -4,6 +4,7 @@ import {
   SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  WsException,
 } from "@nestjs/websockets";
 import { Socket } from "socket.io";
 import { CharacterService } from "src/character/character.service";
@@ -114,7 +115,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.eventsService.launchFight(clientFighter, opponent);
       }, this.reponseDelay);
     } catch (err) {
-      client.emit("error", err);
+      console.error(err);
+      client.emit("exception", err);
     }
+  }
+
+  @SubscribeMessage("exception")
+  handleMessage(payload: any): string {
+    throw new WsException(payload);
   }
 }

@@ -63,6 +63,9 @@ export class EventsService {
     fighterRank: number,
     opponents: ICharacter[]
   ): Promise<ICharacter> {
+    if (opponents.length === 0) {
+      return Promise.reject("No opponent found");
+    }
     const fighter = getClosestFighterByRank(fighterRank, opponents);
     const opponentOwner = await this.userService.getUser(String(fighter.owner));
     if (!opponentOwner) {
