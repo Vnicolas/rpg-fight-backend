@@ -6,6 +6,7 @@ import {
   Param,
   BadRequestException,
   Patch,
+  Query,
   Body,
 } from "@nestjs/common";
 import { Fight } from "src/fight/entities/fight.entity";
@@ -14,6 +15,7 @@ import { objectIdCharactersNumber } from "src/shared/utils";
 import { CharacterService } from "./character.service";
 import { CharacterDTO } from "./dto/character.dto";
 import { Character } from "./entity/character.entity";
+import { ObjectID as MongoObjectID } from "mongodb";
 
 @Controller("characters")
 export class CharacterController {
@@ -24,9 +26,19 @@ export class CharacterController {
 
   // Retrieve characters list
   @Get()
-  async getAllCharacter(@Res() res): Promise<Character[]> {
+  async getAllCharacter(@Res() res, @Query() query): Promise<Character[]> {
     try {
-      const characters: Character[] = await this.characterService.getAllCharacters();
+      const options: any = {};
+      if (
+        query &&
+        query.owner &&
+        query.owner.length === objectIdCharactersNumber
+      ) {
+        options.owner = new MongoObjectID(query.owner);
+      }
+      const characters: Character[] = await this.characterService.getAllCharacters(
+        options
+      );
       return res.status(HttpStatus.OK).json(characters);
     } catch (err) {
       throw err;
